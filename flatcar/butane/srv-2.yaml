@@ -10,7 +10,7 @@ storage:
     - path: /etc/hostname
       overwrite: true
       contents:
-        inline: mujina-k3s-srv
+        inline: k3s-srv-2
     - path: /etc/systemd/network/10-mainif.network
       overwrite: true
       contents:
