@@ -1,0 +1,28 @@
+variant: flatcar
+version: 1.0.0
+ignition:
+  config:
+    merge:
+      - local: ign/common_k3s-prep.ign
+      - local: ign/common_k3s-srv-settings.ign
+systemd:
+  units:
+    - name: k3s-install.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Run K3s script
+        Wants = network-online.target
+        After = network.target network-online.target
+        ConditionPathExists=/opt/k3s-install.sh
+        ConditionPathExists=!/opt/bin/k3s
+        [Service]
+        Type=forking
+        TimeoutStartSec=180
+        RemainAfterExit=yes
+        KillMode=process
+        Environment="INSTALL_K3S_EXEC=--cluster-init"
+        Environment="INSTALL_K3S_SKIP_SELINUX_RPM=true"
+        ExecStart=/usr/bin/sh -c "/opt/k3s-install.sh"
+        [Install]
+        WantedBy=multi-user.target

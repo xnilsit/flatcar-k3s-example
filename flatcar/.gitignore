@@ -1,0 +1,5 @@
+flatcar_production_qemu_image.img.sig
+config.json
+ign/*
+flatcar_production_qemu_image.img.fresh
+Flatcar_Image_Signing_Key.asc

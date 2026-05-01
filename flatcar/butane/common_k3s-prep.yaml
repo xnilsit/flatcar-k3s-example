@@ -1,0 +1,35 @@
+variant: flatcar
+version: 1.0.0
+storage:
+  files:
+    - path: /opt/k3s-install.sh
+      mode: 755
+      contents:
+        source: https://get.k3s.io
+    - path: /etc/flatcar/enabled-sysext.conf
+      mode: 644
+      append:
+        - inline: |
+            zfs
+    - path: /etc/modules-load.d/zfs.conf
+      mode: 644
+      append:
+        - inline: |
+            zfs
+    - path: /etc/sysctl.d/k3s.conf
+      mode: 644
+      contents:
+        inline: |
+          fs.inotify.max_queued_events = 2099999999
+          fs.inotify.max_user_instances = 2099999999
+          fs.inotify.max_user_watches = 2099999999
+          user.max_inotify_instances = 2099999999
+          user.max_inotify_watches = 2099999999
+systemd:
+  units:
+    - name: locksmithd.service
+      mask: true
+    - name: update-engine.service
+      enabled: true
+    - name: iscsid.service
+      enabled: true

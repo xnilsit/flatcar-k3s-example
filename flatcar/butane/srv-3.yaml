@@ -1,0 +1,60 @@
+variant: flatcar
+version: 1.0.0
+ignition:
+  config:
+    merge:
+      - local: ign/common_ssh.ign
+      - local: ign/k3s-srv-join.ign
+storage:
+  files:
+    - path: /etc/hostname
+      overwrite: true
+      contents:
+        inline: k3s-srv-3
+    - path: /etc/systemd/network/10-mainif.network
+      overwrite: true
+      contents:
+        inline: |
+          [Match]
+          MACAddress=
+
+          [Network]
+          Address=
+          Gateway=
+          DNS=1.1.1.1
+          DNS=2606:4700:4700::1111
+
+          [Address]
+          Address=
+          Peer=
+  disks:
+    - device: /dev/disk/by-id/...
+      wipe_table: true
+    - device: /dev/nvme0n1
+      wipe_table: true
+    - device: /dev/nvme1n1
+      wipe_table: true
+systemd:
+  units:
+    - name: zfs.target
+      enabled: true
+    - name: zfs-import.target
+      enabled: true
+    - name: ensure-zfspv-pool.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Ensure ZFS pool "zfspv-pool" exists on $ZPOOL_DISK
+        After=zfs-import.target
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        Environment="ZPOOL_DISK=/dev/disk/by-id/..."
+        # Exit successfully if the pool already exists; otherwise create it.
+        ExecStart=/bin/sh -c 'if zpool list -H -o name | grep -q "^zfspv-pool$"; then \
+                                echo "Pool \"zfspv-pool\" already present"; \
+                              else \
+                                zpool create -f zfspv-pool "$ZPOOL_DISK"; \
+                              fi'
+        [Install]
+        WantedBy=zfs.target

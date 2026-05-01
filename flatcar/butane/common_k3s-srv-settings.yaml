@@ -1,0 +1,37 @@
+variant: flatcar
+version: 1.0.0
+storage:
+  files:
+    - path: /etc/rancher/k3s/config.yaml
+      mode: 644
+      contents:
+        inline: |
+          flannel-backend: "none"
+          embedded-registry: true
+          supervisor-metrics: true
+          disable-kube-proxy: true
+          disable-network-policy: true
+          disable-cloud-controller: true
+          disable:
+            - servicelb
+            - traefik
+            - local-storage
+          service-node-port-range: "3478-32767"
+          etcd-expose-metrics: true
+          kubelet-arg:
+            - "cloud-provider=external"
+            - "config=/etc/rancher/k3s/kubelet.config"
+          write-kubeconfig-mode: "644"
+    - path: /etc/rancher/k3s/registries.yaml
+      mode: 644
+      contents:
+        inline: |
+          mirrors:
+            "*":
+    - path: /etc/rancher/k3s/kubelet.config
+      mode: 644
+      contents:
+        inline: |
+          apiVersion: kubelet.config.k8s.io/v1beta1
+          kind: KubeletConfiguration
+          maxPods: 500
